@@ -22,6 +22,20 @@ class Game
     self.correct_guesses = []
   end
 
+  def play
+    until guesses_left.zero? || player_won?
+      puts "Word: #{display_word}"
+
+      decorate_line
+      prompt_for_guess
+    end
+
+    puts "The word was: #{word_to_be_guessed}" unless player_won?
+
+    puts_with_decoration game_over_msg
+    puts_with_decoration game_result_msg(player_won?), (player_won? ? '-'.green : '-'.red)
+  end
+
   def display_word
     word = ''
     placeholder = '_'
@@ -38,14 +52,15 @@ class Game
 
     until guess_valid?(guess)
       puts incorrect_guesses_msg(incorrect_guesses) unless incorrect_guesses.empty?
-      puts guesses_left_msg(guesses_left)
+      puts_with_padding guesses_left_msg(guesses_left)
 
-      puts guess_prompt_msg
+      puts_with_padding guess_prompt_msg
       guess = gets.chomp[0]
 
-      puts invalid_guess_msg unless guess_valid?(guess)
+      puts_with_padding invalid_guess_msg unless guess_valid?(guess)
     end
 
+    puts_with_padding guess_result_msg(correct?(guess)), :both
     process_guess(guess)
   end
 
@@ -54,7 +69,7 @@ class Game
   end
 
   def decorate_line
-    30.times { print '-' }
+    30.times { print '*' }
 
     puts ''
   end
@@ -91,14 +106,4 @@ end
 game = Game.new
 puts "Word to be guessed: #{game.word_to_be_guessed}"
 
-until game.guesses_left.zero? || game.player_won?
-  puts "Word: #{game.display_word}"
-
-  game.decorate_line
-  game.prompt_for_guess
-end
-
-puts "Word to be guesses: #{game.word_to_be_guessed.chars}"
-puts "Letters guessed: #{game.correct_guesses}"
-puts "Won? #{game.player_won?}"
-puts game.player_won? ? 'You won!' : 'You lost!'
+game.play

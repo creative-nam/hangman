@@ -1,19 +1,24 @@
-require_relative 'word_generator'
+# frozen_string_literal: true
 
-# frozen string literal: true
+require_relative 'word_generator'
+require_relative 'messageable'
 
 # This is the class that will be responsible for the core operations of our game,
 # such as interacting with player, taking their input (a guess), decide if it's
 # correct or not, and what to in each case.
 class Game
   include WordGenerator
+  include Messageable
 
-  attr_accessor :word_to_be_guessed, :incorrect_guesses, :letters_guessed
+  @@max_amount_of_guesses = 12
 
-  def initialize(word_to_guessed = nil, incorrect_guesses = nil)
+  attr_accessor :word_to_be_guessed, :guesses_left, :incorrect_guesses, :letters_guessed
+
+  def initialize(_word_to_guessed = nil, _incorrect_guesses = nil)
     self.word_to_be_guessed = generate_random_word
-    self.incorrect_guesses = word_to_be_guessed.length
+    self.guesses_left = @@max_amount_of_guesses
 
+    self.incorrect_guesses = []
     self.letters_guessed = []
   end
 
@@ -28,20 +33,45 @@ class Game
     word
   end
 
+  def prompt_for_guess
+    guess = ''
+
+    until guess_valid?(guess)
+      puts incorrect_guesses_msg(incorrect_guesses) unless incorrect_guesses.empty?
+
+      puts guesses_left_msg(guesses_left)
+
+      puts guess_prompt_msg(guesses_left)
+      guess = gets.chomp
+      guess = guess[0] if guess.length > 1
+
+      puts invalid_guess_msg unless guess_valid?(guess)
+    end
+  end
+
+  def decorate_line
+    30.times { print '-' }
+
+    puts ''
+  end
+
+  private
+
   def guessed?(letter)
     letters_guessed.include?(letter)
   end
 
-  def guess_letters
-    puts "Word to guess as str: #{word_to_be_guessed.chars}"
-    letters_guessed << word_to_be_guessed.chars.sample
+  def guess_valid?(guess)
+    guess && guess.match?(/[[:alpha:]]/)
   end
 end
 
-game = Game.new()
+game = Game.new
 puts "Word to be guessed: #{game.word_to_be_guessed}"
 
-puts "String: #{game.display_word}"
-2.times { game.guess_letters }
-puts "String 2: #{game.display_word}"
+until game.guesses_left.zero? || game.letters_guessed.length == game.word_to_be_guessed.length
+  puts "Word: #{game.display_word}"
 
+  game.decorate_line
+  game.prompt_for_guess
+end

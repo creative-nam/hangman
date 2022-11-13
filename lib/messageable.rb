@@ -7,7 +7,7 @@ require 'colorize'
 # left, the message to prompt for a guess, etc.
 module Messageable
   def guess_prompt_msg
-    'Please enter a letter as your guess:'
+    'Please enter a letter as your guess, or type \'save\' to save the game:'
   end
 
   # Guess validation
@@ -39,6 +39,15 @@ module Messageable
 
   def game_result_msg(win)
     win ? 'You WON!'.green : 'You LOST!'.red
+  end
+
+  # Serialization and file saving messages
+  def saved_game_msg(game_file_id)
+    "
+    Your game was saved with the ID: #{game_file_id}
+
+    You can use that ID to find your game later.
+    ".yellow
   end
 
   # Make our messages prettier

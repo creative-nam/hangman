@@ -15,7 +15,8 @@ class Game
   @@max_amount_of_guesses = 12
   @@save_game_keyword = 'save'
 
-  attr_accessor :word_to_be_guessed, :guesses_left, :correct_guesses, :incorrect_guesses, :id
+  attr_accessor :word_to_be_guessed, :guesses_left, :correct_guesses,
+                :incorrect_guesses, :saved_before, :serialization_id
 
   def initialize
     self.word_to_be_guessed = generate_random_word
@@ -23,6 +24,55 @@ class Game
 
     self.incorrect_guesses = []
     self.correct_guesses = []
+
+    self.serialization_id = nil
+  end
+
+  def determine_state
+    state = prompt_for_state
+
+    return unless state == 2
+
+    if saved_games?
+      update_state!
+    else
+      puts no_saved_games_msg
+    end
+  end
+
+  def prompt_for_state
+    option = 0
+
+    until valid_state?(option)
+      puts state_prompt_msg
+      option = gets.chomp.to_i
+
+      puts invalid_state_msg unless valid_state?(option)
+    end
+
+    option
+  end
+
+  def update_state!
+    id = prompt_for_id
+    game_paused = File.read(generate_file_name(id))
+
+    unserialize!(game_paused)
+  end
+
+  # if the player chooses to resume a previously saved game, he should be
+  # prompted for the game's ID
+  def prompt_for_id
+    id = 0
+
+    until game_exists?(id)
+      puts id_prompt_msg
+      id = gets.chomp.to_i
+
+      puts invalid_id_msg unless game_exists?(id)
+    end
+
+    id
   end
 
   def play
@@ -98,7 +148,7 @@ class Game
   def save_game
     super
 
-    puts saved_game_msg(@@file_id)
+    puts saved_game_msg(serialization_id)
   end
 
   def guessed?(letter)
@@ -130,11 +180,16 @@ class Game
   def player_wants_to_save_game?(guess)
     guess == @@save_game_keyword
   end
+
+  def valid_state?(state)
+    state.between?(1, 2)
+  end
 end
 
 game = Game.new
 puts "Word to be guessed: #{game.word_to_be_guessed}"
 
+game.determine_state
 game.play
 puts ''
 puts 'Serialized game:'

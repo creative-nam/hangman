@@ -6,6 +6,30 @@ require 'colorize'
 # displayed throughout the game, such as: the amount of guesses the player has
 # left, the message to prompt for a guess, etc.
 module Messageable
+  def state_prompt_msg
+    "
+    Would you like to continue resume a saved game or start a new one?
+    Press 1 to start new game
+    Press 2 to resume previous game
+    "
+  end
+
+  def invalid_state_msg
+    'Invalid option! Please select a number between 1 and 2.'.red
+  end
+
+  def no_saved_games_msg
+    'Invalid option. There are no saved games to resume.'.red
+  end
+
+  def id_prompt_msg
+    "What is the ID of the game you'd like to resume?"
+  end
+
+  def invalid_id_msg
+    'Invalid ID. There are no games saved with that ID.'.red
+  end
+
   def guess_prompt_msg
     'Please enter a letter as your guess, or type \'save\' to save the game:'
   end

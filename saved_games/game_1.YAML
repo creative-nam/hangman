@@ -1,8 +1,0 @@
----
-:@word_to_be_guessed: events
-:@guesses_left: 12
-:@incorrect_guesses: []
-:@correct_guesses:
-- e
-- v
-:@serialization_id: 1

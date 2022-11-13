@@ -1,16 +1,18 @@
 # frozen_string_literal: true
 
-require_relative 'word_generator'
 require_relative 'messageable'
+require_relative 'promptable'
 require_relative 'serializable'
+require_relative 'word_generator'
 
 # This is the class that will be responsible for the core operations of our game,
 # such as interacting with player, taking their input (a guess), decide if it's
 # correct or not, and what to in each case.
 class Game
-  include WordGenerator
   include Messageable
+  include Promptable
   include Serializable
+  include WordGenerator
 
   @@max_amount_of_guesses = 12
   @@save_game_keyword = 'save'
@@ -29,28 +31,11 @@ class Game
   end
 
   def determine_state
-    state = prompt_for_state
+    state = map_state(prompt_for_state)
 
-    return unless state == 2
+    return unless state == :resume_previous_game
 
-    if saved_games?
-      update_state!
-    else
-      puts no_saved_games_msg
-    end
-  end
-
-  def prompt_for_state
-    option = 0
-
-    until valid_state?(option)
-      puts state_prompt_msg
-      option = gets.chomp.to_i
-
-      puts invalid_state_msg unless valid_state?(option)
-    end
-
-    option
+    saved_games? ? update_state! : (puts no_saved_games_msg)
   end
 
   def update_state!
@@ -60,69 +45,27 @@ class Game
     unserialize!(game_paused)
   end
 
-  # if the player chooses to resume a previously saved game, he should be
-  # prompted for the game's ID
-  def prompt_for_id
-    id = 0
-
-    until game_exists?(id)
-      puts id_prompt_msg
-      id = gets.chomp.to_i
-
-      puts invalid_id_msg unless game_exists?(id)
-    end
-
-    id
-  end
-
   def play
     guess = ''
 
     until guesses_left.zero? || player_won?
-      puts "Word: #{display_word}"
+      puts "Word: #{censor_word_to_be_guessed}"
 
       decorate_line
       guess = prompt_for_guess
 
-      if player_wants_to_save_game?(guess)
-        save_game
-
-        break
-      end
+      (save_game or break) if player_wants_to_save_game?(guess)
 
       puts_with_padding guess_result_msg(correct?(guess)), :both
       process_guess(guess)
     end
 
-    return if player_wants_to_save_game?(guess)
-
-    puts "The word was: #{word_to_be_guessed}"
-
-    puts_with_decoration game_over_msg
-    puts_with_decoration game_result_msg(player_won?), (player_won? ? '-'.green : '-'.red)
+    end_game unless player_wants_to_save_game?(guess)
   end
 
-  def prompt_for_guess
-    guess = ''
+  private
 
-    until guess_valid?(guess)
-      puts incorrect_guesses_msg(incorrect_guesses) unless incorrect_guesses.empty?
-      puts_with_padding guesses_left_msg(guesses_left)
-
-      puts_with_padding guess_prompt_msg
-
-      guess = gets.chomp.downcase
-      break if player_wants_to_save_game?(guess)
-
-      guess = guess[0]
-
-      puts_with_padding invalid_guess_msg unless guess_valid?(guess)
-    end
-
-    guess
-  end
-
-  def display_word
+  def censor_word_to_be_guessed
     word = ''
     placeholder = '_'
 
@@ -133,17 +76,13 @@ class Game
     word
   end
 
-  def player_won?
-    (word_to_be_guessed.chars - correct_guesses).empty?
+  def end_game
+    decorate_line
+    puts_with_padding word_revelation_msg
+
+    puts_with_decoration game_over_msg
+    puts_with_decoration game_result_msg(player_won?), (player_won? ? '-'.green : '-'.red)
   end
-
-  def decorate_line
-    30.times { print '*' }
-
-    puts ''
-  end
-
-  private
 
   def save_game
     super
@@ -153,10 +92,6 @@ class Game
 
   def guessed?(letter)
     correct_guesses.include?(letter)
-  end
-
-  def guess_valid?(guess)
-    guess&.match?(/[[:alpha:]]/)
   end
 
   def correct?(guess)
@@ -177,12 +112,16 @@ class Game
     self.guesses_left -= 1
   end
 
+  def player_won?
+    (word_to_be_guessed.chars - correct_guesses).empty?
+  end
+
   def player_wants_to_save_game?(guess)
     guess == @@save_game_keyword
   end
 
-  def valid_state?(state)
-    state.between?(1, 2)
+  def map_state(state)
+    state == 1 ? :new_game : :resume_previous_game
   end
 end
 

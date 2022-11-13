@@ -6,6 +6,7 @@ require 'colorize'
 # displayed throughout the game, such as: the amount of guesses the player has
 # left, the message to prompt for a guess, etc.
 module Messageable
+  # State related messages
   def state_prompt_msg
     "
     Would you like to continue resume a saved game or start a new one?
@@ -22,6 +23,7 @@ module Messageable
     'Invalid option. There are no saved games to resume.'.red
   end
 
+  # ID related messages
   def id_prompt_msg
     "What is the ID of the game you'd like to resume?"
   end
@@ -30,6 +32,7 @@ module Messageable
     'Invalid ID. There are no games saved with that ID.'.red
   end
 
+  # Guess related messages
   def guess_prompt_msg
     'Please enter a letter as your guess, or type \'save\' to save the game:'
   end
@@ -65,12 +68,16 @@ module Messageable
     win ? 'You WON!'.green : 'You LOST!'.red
   end
 
+  def word_revelation_msg
+    "The word was: #{word_to_be_guessed}"
+  end
+
   # Serialization and file saving messages
   def saved_game_msg(game_file_id)
     "
     Your game was saved with the ID: #{game_file_id}
 
-    You can use that ID to find your game later.
+    You can use that ID to find your game later. You should write it down.
     ".yellow
   end
 
@@ -90,6 +97,12 @@ module Messageable
     amount_of_times.times { print decorator }
     print str
     amount_of_times.times { print decorator }
+
+    puts ''
+  end
+
+  def decorate_line
+    30.times { print '*' }
 
     puts ''
   end

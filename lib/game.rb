@@ -49,6 +49,7 @@ class Game
     guess = ''
 
     until guesses_left.zero? || player_won?
+      clear_terminal
       puts "Word: #{censor_word_to_be_guessed}"
 
       decorate_line
@@ -56,7 +57,8 @@ class Game
 
       (save_game or break) if player_wants_to_save_game?(guess)
 
-      puts_with_padding guess_result_msg(correct?(guess)), :both
+      puts_with_padding guess_result_msg(correct?(guess))
+
       process_guess(guess)
     end
 
@@ -126,17 +128,7 @@ class Game
 end
 
 game = Game.new
-puts "Word to be guessed: #{game.word_to_be_guessed}"
 
 game.determine_state
 game.play
-puts ''
-puts 'Serialized game:'
-puts serialized_game = game.serialize
 
-puts ''
-puts 'Unserialized game:'
-puts game.unserialize!(serialized_game)
-
-puts 'Serialized again:'
-puts game.unserialize!(serialized_game).serialize

@@ -106,4 +106,8 @@ module Messageable
 
     puts ''
   end
+
+  def clear_terminal
+    system('cls') || system('clear')
+  end
 end

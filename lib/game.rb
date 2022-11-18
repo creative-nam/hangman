@@ -126,9 +126,3 @@ class Game
     state == 1 ? :new_game : :resume_previous_game
   end
 end
-
-game = Game.new
-
-game.determine_state
-game.play
-

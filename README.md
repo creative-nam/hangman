@@ -27,4 +27,4 @@ During this project, i learned and/or practiced the following skils/concepts:
 
 # Run the game
 Using the following link you can run the game replit.com:
-[![Run on Replit.com](https://replit.com/badge/github/creative-nam/hangman)](https://replit.com/new/github/creative-nam/hangman)
+[![Run on Replit.com](https://replit.com/badge/github/creative-nam/hangman)](https://replit.com/@creativeuname/hangman?v=1)
